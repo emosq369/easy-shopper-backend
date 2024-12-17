@@ -1,17 +1,27 @@
 const express = require("express");
 const cors = require("cors");
 const { Pool } = require("pg");
+require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Environment check (Development or Production)
+if (process.env.NODE_ENV === 'development') {
+    console.log("You are in the development environment.");
+} else if (process.env.NODE_ENV === 'production') {
+    console.log("You are in the production environment.");
+} else {
+    console.log("The environment is not set correctly.");
+}
+
 const pool = new Pool({
-    user: 'bfshopper',
-    host: 'localhost',
-    database: 'easyshopper',
-    password: 'bfeasy',
-    port: 5432
+    user: process.env.DB_USER,        
+    host: process.env.DB_HOST,        
+    database: process.env.DB_DATABASE, 
+    password: process.env.DB_PASSWORD, 
+    port: process.env.DB_PORT  
 });
 
 // 1. Login validation 
@@ -123,7 +133,7 @@ app.get('/order/:orderId', async (req, res) => {
     try{
         const result = await pool.query(
             `SELECT o.id, o.order_number, o.status, o.total_price, o.order_date,
-            p.id, p.name, p.description, op.quantity, op.total_price AS product_total
+            p.id, p.name, p.description, p.image_url, op.quantity, op.total_price AS product_total
             FROM orders o JOIN order_products op ON o.id = op.order_id 
             JOIN products p ON op.product_id = p.id
             WHERE op.order_id = $1`, [orderId]
@@ -140,7 +150,8 @@ app.get('/order/:orderId', async (req, res) => {
                 name: row.name,
                 description: row.description,
                 quantity: row.quantity,
-                total: row.product_total
+                total: row.product_total,
+                image_url: row.image_url
             }))
         }
 
