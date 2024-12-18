@@ -200,4 +200,6 @@ app.post('/neworder', async (req, res) => {
     }
   });
 
-app.listen(5001, () => console.log('Server is running on http://localhost:5001'))
+const port = process.env.PORT || 5001;
+app.listen(port, () => console.log(`Server is running on http://localhost:${port}`));
+
